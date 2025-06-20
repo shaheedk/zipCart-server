@@ -1,0 +1,26 @@
+import express, { Request, Response } from "express";
+import cors from 'cors'
+import 'dotenv/config'
+
+// app config 
+const app = express();
+
+const port=process.env.PORT||3000
+
+// middleweres 
+app.use(express.json())
+app.use(cors())
+
+// api endpoints 
+app.get("/", (req: Request, res: Response) => {
+  res.send("Api Working");
+  
+});
+app.get("/l", (req: Request, res: Response) => {
+  res.send("Hello TypeScript!");
+  
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port http://localhost:${port}`);
+});
