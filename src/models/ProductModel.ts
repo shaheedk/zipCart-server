@@ -7,7 +7,7 @@ interface Product extends Document {
   image: string[];       
   category: string;
   subCategory: string;
-  size: string[];       
+  size: string[];        
   bestSeller?: boolean;
   date: number;
 }
@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema<Product>({
   name: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
-  image: { type: [String], required: true },       
+  image: { type: [String], required: true },      
   category: { type: String, required: true },
   subCategory: { type: String, required: true },
   size: { type: [String], required: true },
