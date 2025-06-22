@@ -28,7 +28,15 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     }else{
         res.json({success:false,message:'invalid credientials'})
     }
-  } catch (error) {}
+  } catch (error) {
+   if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
+  }
 };
 
 // Route for user registration
