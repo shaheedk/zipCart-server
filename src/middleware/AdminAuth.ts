@@ -1,13 +1,16 @@
 import { NextFunction,Request ,Response} from "express";
 import jwt from "jsonwebtoken";
 
+
 const adminAuth=async(req:Request,res:Response,next:NextFunction)=>{
 try {
-    const{token}=req.headers;
+      const tokenHeader = req.headers.token;
+       const token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+    
     if(!token){
         return res.json({success:false ,message:"Not Authorized Login Again"})
     }
-    const token_decode=jwt.verify(token,process.env.JWT_SECRET)
+    const token_decode=jwt.verify(token ,process.env.JWT_SECRET!)
     if(token_decode!==process.env.ADMIN_EMAIL||process.env.ADMIN_PASSWORD){
         return res.json({success:false ,message:"Not Authorized Login Again"})
 
@@ -23,3 +26,4 @@ try {
     }
 }
 }
+export default adminAuth;
