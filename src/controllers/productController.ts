@@ -46,6 +46,7 @@ const addProducts = async (req: Request, res: Response): Promise<void> => {
       images: imagesUrl,
       date: Date.now(),
     };
+    
     console.log(productData);
 
     const product = new productModel(productData);
