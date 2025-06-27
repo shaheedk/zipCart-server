@@ -15,7 +15,7 @@ const addProducts = async (req: Request, res: Response): Promise<void> => {
       category,
       subCategory,
       sizes,
-      bestSeller,
+      bestseller,
     } = req.body;
 
     const image1 = files.image1 && files.image1?.[0];
@@ -41,7 +41,7 @@ const addProducts = async (req: Request, res: Response): Promise<void> => {
       category,
       price: Number(price),
       subCategory,
-      bestSeller: bestSeller === "true" ? true : false,
+      bestseller: bestseller === "true" ? true : false,
       size: JSON.parse(sizes),
       images: imagesUrl,
       date: Date.now(),

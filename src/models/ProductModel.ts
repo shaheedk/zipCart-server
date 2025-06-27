@@ -8,7 +8,7 @@ interface Product extends Document {
   category: string;
   subCategory: string;
   size: string[];        
-  bestSeller?: boolean;
+  bestseller?: boolean;
   date: number;
 }
 
@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema<Product>({
   category: { type: String, required: true },
   subCategory: { type: String, required: true },
   size: { type: [String], required: true },
-  bestSeller: { type: Boolean },
+  bestseller: { type: Boolean },
   date: { type: Number, required: true },
 });
 
