@@ -20,17 +20,14 @@ app.use(cors())
 // api endpoints 
 app.use('/api/user',userRouter)
 app.use('/api/product',productRouter)
-app.use('api/cart',cartRouter)
+app.use('/api/cart',cartRouter)
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Api Working");
 
   
 });
-app.get("/l", (req: Request, res: Response) => {
-  res.send("Hello TypeScript!");
-  
-});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);
