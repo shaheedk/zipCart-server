@@ -84,7 +84,25 @@ const userOrders = async (req: Request, res: Response) => {
 };
 
 // update order status from Admin Panel
-const UpdateStatus = async (req: Request, res: Response) => {};
+const UpdateStatus = async (req: Request, res: Response) => {
+  try {
+    const {orderId,status}=req.body
+    await orderModel.findByIdAndUpdate(orderId,{status})
+
+    res.json({success:true,message:'Status Updated'})
+
+  } catch (error) {
+     console.log(error);
+
+    if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
+  }
+};
 export {
   placeOrder,
   placeOrderStrip,
