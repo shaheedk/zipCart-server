@@ -42,7 +42,26 @@ const placeOrderStrip = async (req: Request, res: Response) => {};
 const placeOrderRazorpay = async (req: Request, res: Response) => {};
 
 // All Orders data for Admin Panel
-const AllOrders = async (req: Request, res: Response) => {};
+const AllOrders = async (req: Request, res: Response) => {
+
+  try {
+    const orders=await orderModel.find({})
+    res.json({success:true,orders})
+  } catch (error) {
+    console.log(error);
+
+    if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
+  }
+
+};
+
+
 
 // All Orders Data for Frontend
 const userOrders = async (req: Request, res: Response) => {
