@@ -47,24 +47,17 @@ const placeOrder = async (req: Request, res: Response) => {
 // Placing orders using Strip Method
 const placeOrderStrip = async (req: Request, res: Response) => {
   try {
-    const { userId, items, amount, address } = req.body;
+    const { userId, items, amount, address, paymentMethod, payment } = req.body;
     const { origin } = req.headers;
 
-    const orderData = {
-      userId,
-      items,
-      amount,
-      address,
-      paymentMethod: "Stripe",
-      payment: false,
-      date: Date.now(),
-    };
-    const newOrder = new orderModel(orderData);
-    await newOrder.save();
+    // ✅ Define currency and deliveryCharge
+    const currency = "inr"; // or get from frontend
+    const deliveryCharge = 50; // example flat charge
 
-    const line_items = items.map((item:any) => ({
+    // ✅ Generate Stripe line items
+    const line_items = items.map((item: Item) => ({
       price_data: {
-        currency: currency,
+        currency,
         product_data: {
           name: item.name,
         },
@@ -74,28 +67,65 @@ const placeOrderStrip = async (req: Request, res: Response) => {
     }));
 
     line_items.push({
-  price_data: {
-    currency: currency,
-    product_data: {
-      name: 'Delivery Charges'
-    },
-    unit_amount: deliveryCharge * 100
-  },
-  quantity: 1
-});
+      price_data: {
+        currency,
+        product_data: {
+          name: "Delivery Charges",
+        },
+        unit_amount: deliveryCharge * 100,
+      },
+      quantity: 1,
+    });
 
-const session = await stripe.checkout.sessions.create({
-  success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
-  cancel_url: `${origin}/verify?success=false&orderId=${newOrder._id}`,
-  line_items,
-  mode: 'payment',
-});
+    // ✅ Create Stripe Checkout Session
+    const tempOrder = {
+      userId,
+      items,
+      amount,
+      address,
+      paymentMethod: "Stripe",
+      payment: false,
+      date: Date.now(),
+    };
 
-res.json({ success: true, session_url: session.url });
+    const newOrder = new orderModel(tempOrder);
+    await newOrder.save(); // ✅ Now safe to save order
 
+    const session = await stripe.checkout.sessions.create({
+      success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
+      cancel_url: `${origin}/verify?success=false&orderId=${newOrder._id}`,
+      line_items,
+      mode: "payment",
+    });
+
+    res.json({ success: true, session_url: session.url });
   } catch (error) {
     console.log(error);
+    if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
+  }
+};
 
+// Verify Stripe
+const verifyStripe = async (req: Request, res: Response): Promise<void> => {
+  const { orderId, success, userId } = req.body;
+
+  try {
+    if (success === "true") {
+      await orderModel.findByIdAndUpdate(orderId, { payment: true });
+      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      res.json({ success: true });
+    } else {
+      await orderModel.findByIdAndDelete(orderId);
+      res.json({ success: false });
+    }
+  } catch (error) {
+    console.log(error);
     if (error instanceof Error) {
       res.status(400).json({ success: false, message: error.message });
     } else {
@@ -173,4 +203,5 @@ export {
   AllOrders,
   UpdateStatus,
   userOrders,
+  verifyStripe,
 };

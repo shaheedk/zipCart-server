@@ -23,20 +23,18 @@ const addToCart = async (req: Request, res: Response) => {
     await userModel.findByIdAndUpdate(userId, { cartData });
 
     res.json({ success: true, message: "Added to Cart" });
-    return 
+    return;
   } catch (error) {
     console.log(error);
 
     if (error instanceof Error) {
       res.status(400).json({ success: false, message: error.message });
-    return 
-
+      return;
     } else {
       res
         .status(400)
         .json({ success: false, message: "An unknown error occurred" });
-    return 
-
+      return;
     }
   }
 };
@@ -54,7 +52,7 @@ const updateCart = async (req: Request, res: Response) => {
 
     res.json({ success: true, message: "Cart Updated" });
   } catch (error) {
-     console.log(error);
+    console.log(error);
 
     if (error instanceof Error) {
       res.status(400).json({ success: false, message: error.message });
@@ -68,15 +66,14 @@ const updateCart = async (req: Request, res: Response) => {
 
 //  get user cart data
 const getUserCart = async (req: Request, res: Response) => {
-    try {
-        const {userId}=req.body;
- const userData = await userModel.findById(userId);
-    let cartData = await userData!.cartData;
+  try {
+    const { userId } = req.body;
+    const userData = await userModel.findById(userId);
+    let cartData = await userData?.cartData;
 
-    res.json({ success: true,cartData });
-
-    } catch (error) {
-       console.log(error);
+    res.json({ success: true, cartData });
+  } catch (error) {
+    console.log(error);
 
     if (error instanceof Error) {
       res.status(400).json({ success: false, message: error.message });
@@ -85,8 +82,7 @@ const getUserCart = async (req: Request, res: Response) => {
         .status(400)
         .json({ success: false, message: "An unknown error occurred" });
     }
-   
-    }
+  }
 };
 
 export { addToCart, updateCart, getUserCart };
