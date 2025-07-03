@@ -12,7 +12,7 @@ const deliveryCharge = 10;
 // getway initialize
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-const reqazorpayInstance = new Razorpay({
+const razorpayInstance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
@@ -159,7 +159,7 @@ const placeOrderRazorpay = async (req: Request, res: Response) => {
       receipt: newOrder._id.toString(),
     };
 
-    await reqazorpayInstance.orders.create(options, (error, order) => {
+    await razorpayInstance.orders.create(options, (error:any, order:any) => {
       if (error) {
         console.log(error);
         res.json({ success: false, message: error });
