@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import orderModel from "../models/orderModel";
 import userModel from "../models/userModel";
 import Stripe from "stripe";
+import Razorpay from "razorpay";
+import { log } from "console";
 
 // global variables
 
@@ -10,7 +12,10 @@ const deliveryCharge = 10;
 // getway initialize
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
-
+const reqazorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 // Placing orders using COD Method
 const placeOrder = async (req: Request, res: Response) => {
   try {
@@ -47,14 +52,9 @@ const placeOrder = async (req: Request, res: Response) => {
 // Placing orders using Strip Method
 const placeOrderStrip = async (req: Request, res: Response) => {
   try {
-    const { userId, items, amount, address, paymentMethod, payment } = req.body;
+    const { userId, items, amount, address } = req.body;
     const { origin } = req.headers;
 
-    // ✅ Define currency and deliveryCharge
-    const currency = "inr"; // or get from frontend
-    const deliveryCharge = 50; // example flat charge
-
-    // ✅ Generate Stripe line items
     const line_items = items.map((item: Item) => ({
       price_data: {
         currency,
@@ -77,8 +77,7 @@ const placeOrderStrip = async (req: Request, res: Response) => {
       quantity: 1,
     });
 
-    // ✅ Create Stripe Checkout Session
-    const tempOrder = {
+    const orderData = {
       userId,
       items,
       amount,
@@ -88,7 +87,7 @@ const placeOrderStrip = async (req: Request, res: Response) => {
       date: Date.now(),
     };
 
-    const newOrder = new orderModel(tempOrder);
+    const newOrder = new orderModel(orderData);
     await newOrder.save(); // ✅ Now safe to save order
 
     const session = await stripe.checkout.sessions.create({
@@ -137,7 +136,48 @@ const verifyStripe = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Placing orders using Razorpay Method
-const placeOrderRazorpay = async (req: Request, res: Response) => {};
+const placeOrderRazorpay = async (req: Request, res: Response) => {
+  try {
+    const { userId, items, amount, address } = req.body;
+
+    const orderData = {
+      userId,
+      items,
+      amount,
+      address,
+      paymentMethod: "Razorpay",
+      payment: false,
+      date: Date.now(),
+    };
+
+    const newOrder = new orderModel(orderData);
+    await newOrder.save();
+
+    const options = {
+      amount: amount,
+      currency: currency.toUpperCase(),
+      receipt: newOrder._id.toString(),
+    };
+
+    await reqazorpayInstance.orders.create(options, (error, order) => {
+      if (error) {
+        console.log(error);
+        res.json({ success: false, message: error });
+        return;
+      }
+      res.json({ success: true, order });
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
+  }
+};
 
 // All Orders data for Admin Panel
 const AllOrders = async (req: Request, res: Response) => {
