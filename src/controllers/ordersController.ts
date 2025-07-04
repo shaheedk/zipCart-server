@@ -159,7 +159,7 @@ const placeOrderRazorpay = async (req: Request, res: Response) => {
       receipt: newOrder._id.toString(),
     };
 
-    await razorpayInstance.orders.create(options, (error:any, order:any) => {
+    await razorpayInstance.orders.create(options, (error: any, order: any) => {
       if (error) {
         console.log(error);
         res.json({ success: false, message: error });
@@ -176,6 +176,17 @@ const placeOrderRazorpay = async (req: Request, res: Response) => {
         .status(400)
         .json({ success: false, message: "An unknown error occurred" });
     }
+  }
+};
+// verify Razorpay payment 
+const verifyRazorpay = async (req:Request, res:Response) => {
+  try {
+    const { userId, razorpay_order_id } = req.body;
+
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+    console.log(orderInfo);
+  } catch (error) {
+    console.error(error);
   }
 };
 
@@ -244,4 +255,5 @@ export {
   UpdateStatus,
   userOrders,
   verifyStripe,
+  verifyRazorpay
 };
