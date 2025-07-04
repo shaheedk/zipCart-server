@@ -184,9 +184,22 @@ const verifyRazorpay = async (req:Request, res:Response) => {
     const { userId, razorpay_order_id } = req.body;
 
     const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
-    console.log(orderInfo);
+    if(orderInfo.status==='paid'){
+      await orderModel.findByIdAndUpdate(orderInfo.receipt,{payment:true})
+      await userModel.findOneAndUpdate({ _id: userId },{cartData:{}})
+      res.json({success:true,message:"Payment Successful"})
+    }else{
+       res.json({success:false,message:"Payment Failed"})
+    }
   } catch (error) {
-    console.error(error);
+ console.log(error);
+    if (error instanceof Error) {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "An unknown error occurred" });
+    }
   }
 };
 
